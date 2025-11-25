@@ -1,6 +1,8 @@
 import os
 from typing import Any, Dict
 
+import numpy as np
+
 
 try:  # Prefer PyYAML when available for flexible parsing
     import yaml  # type: ignore
@@ -90,3 +92,18 @@ def load_settings(path: str) -> Dict[str, Any]:
 def ensure_odd(value: int) -> int:
     """Force convolution kernel sizes to be odd numbers."""
     return value if value % 2 == 1 else value + 1
+
+
+def resize_frame(frame: np.ndarray, width: int, height: int) -> np.ndarray:
+    """Nearest-neighbor resize implemented manually with NumPy."""
+    if width <= 0 or height <= 0:
+        raise ValueError("Width and height must be positive integers")
+
+    src_h, src_w = frame.shape[:2]
+    if src_h == height and src_w == width:
+        return frame
+
+    y_indices = np.linspace(0, src_h - 1, height).astype(np.int32)
+    x_indices = np.linspace(0, src_w - 1, width).astype(np.int32)
+    resized = frame[y_indices][:, x_indices]
+    return resized

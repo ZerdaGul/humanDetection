@@ -1,35 +1,49 @@
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 
 
 KERNEL_SHAPE = (3, 3)
 
 
-def _apply_kernel(image: np.ndarray, operator: str) -> np.ndarray:
+def _sliding_windows(image: np.ndarray) -> np.ndarray:
     padded = np.pad(image, ((1, 1), (1, 1)), mode="constant", constant_values=0)
-    output = np.zeros_like(image, dtype=np.uint8)
+    return sliding_window_view(padded, KERNEL_SHAPE)
 
-    for y in range(image.shape[0]):
-        for x in range(image.shape[1]):
-            region = padded[y : y + KERNEL_SHAPE[0], x : x + KERNEL_SHAPE[1]]
-            if operator == "erode":
-                output[y, x] = 255 if np.all(region == 255) else 0
-            elif operator == "dilate":
-                output[y, x] = 255 if np.any(region == 255) else 0
-            else:
-                raise ValueError(f"Unsupported morphological operator: {operator}")
 
-    return output
+def _apply(image: np.ndarray, mode: str) -> np.ndarray:
+    windows = _sliding_windows(image)
+    if mode == "erode":
+        result = np.all(windows == 255, axis=(-2, -1))
+    elif mode == "dilate":
+        result = np.any(windows == 255, axis=(-2, -1))
+    else:
+        raise ValueError(f"Unsupported morphological operator: {mode}")
+    return (result.astype(np.uint8)) * 255
 
 
 def erode(image: np.ndarray, iterations: int = 1) -> np.ndarray:
-    result = image.copy()
+    result = image
     for _ in range(max(1, int(iterations))):
-        result = _apply_kernel(result, "erode")
+        result = _apply(result, "erode")
     return result
 
 
 def dilate(image: np.ndarray, iterations: int = 1) -> np.ndarray:
-    result = image.copy()
+    result = image
     for _ in range(max(1, int(iterations))):
-        result = _apply_kernel(result, "dilate")
+        result = _apply(result, "dilate")
+    return result
+
+
+def opening(image: np.ndarray, iterations: int = 1) -> np.ndarray:
+    result = image
+    for _ in range(max(1, int(iterations))):
+        result = dilate(erode(result, 1), 1)
+    return result
+
+
+def closing(image: np.ndarray, iterations: int = 1) -> np.ndarray:
+    result = image
+    for _ in range(max(1, int(iterations))):
+        result = erode(dilate(result, 1), 1)
     return result

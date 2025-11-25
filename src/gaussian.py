@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 
 from utils import ensure_odd
 
@@ -23,13 +24,8 @@ def convolve2d(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     pad_w = kernel_width // 2
 
     padded = np.pad(image.astype(np.float32), ((pad_h, pad_h), (pad_w, pad_w)), mode="edge")
-    output = np.zeros_like(image, dtype=np.float32)
-
-    for y in range(image.shape[0]):
-        for x in range(image.shape[1]):
-            region = padded[y : y + kernel_height, x : x + kernel_width]
-            output[y, x] = np.sum(region * kernel)
-
+    windows = sliding_window_view(padded, (kernel_height, kernel_width))
+    output = np.einsum("ijkl,kl->ij", windows, kernel, optimize=True)
     return np.clip(output, 0, 255).astype(np.uint8)
 
 

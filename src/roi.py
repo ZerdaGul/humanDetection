@@ -14,10 +14,18 @@ class DoorROI:
         top_left: Sequence[int],
         bottom_right: Sequence[int],
         direction: str | None = None,
+        full_frame: bool = False,
     ) -> None:
         self.top_left = (int(top_left[0]), int(top_left[1]))
         self.bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
         self.direction = direction or "either"
+        self.full_frame = full_frame
+
+    def update_bounds(self, height: int, width: int) -> None:
+        if not self.full_frame:
+            return
+        self.top_left = (0, 0)
+        self.bottom_right = (max(0, height - 1), max(0, width - 1))
 
     def contains(self, point: Point | None) -> bool:
         if point is None:

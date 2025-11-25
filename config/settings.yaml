@@ -9,10 +9,15 @@ gaussian:
 background:
   learning_rate: 0.02
 threshold:
-  value: 35
+  value: 25
+  adaptive: true
+  std_factor: 1.6
+  offset: 6.0
 morphology:
-  erosion_iterations: 1
-  dilation_iterations: 2
+  opening_iterations: 1
+  erosion_iterations: 0
+  dilation_iterations: 0
+  closing_iterations: 2
 blob:
   min_area: 700
   max_area: 50000
@@ -20,6 +25,7 @@ blob:
   max_distance: 75.0
   max_disappeared: 12
 roi:
-  top_left: [120, 260]
-  bottom_right: [360, 380]
+  top_left: [0, 0]
+  bottom_right: [0, 0]
   direction: enter
+  full_frame: true
