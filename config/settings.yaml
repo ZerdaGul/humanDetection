@@ -1,0 +1,25 @@
+video_source: samples/test_video.mp4
+display: true
+resize:
+  width: 640
+  height: 480
+gaussian:
+  kernel_size: 5
+  sigma: 1.2
+background:
+  learning_rate: 0.02
+threshold:
+  value: 35
+morphology:
+  erosion_iterations: 1
+  dilation_iterations: 2
+blob:
+  min_area: 700
+  max_area: 50000
+  aspect_ratio_range: [0.2, 3.0]
+  max_distance: 75.0
+  max_disappeared: 12
+roi:
+  top_left: [120, 260]
+  bottom_right: [360, 380]
+  direction: enter
