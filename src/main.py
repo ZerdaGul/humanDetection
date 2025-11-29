@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 from typing import Any, Dict, List
 
@@ -9,17 +11,8 @@ from blob import BlobTracker, filter_blobs
 from connected_components import connected_components
 from gaussian import apply_gaussian_blur
 from morphology import closing, dilate, erode, opening
-from roi import DoorROI
 from threshold import binary_threshold
 from utils import load_settings, resize_frame
-
-
-def build_roi(config: Dict[str, Any]) -> DoorROI:
-    roi_cfg = config.get("roi", {})
-    top_left = roi_cfg.get("top_left", [0, 0])
-    bottom_right = roi_cfg.get("bottom_right", [100, 100])
-    full_frame = bool(roi_cfg.get("full_frame", False))
-    return DoorROI(top_left, bottom_right, roi_cfg.get("direction"), full_frame=full_frame)
 
 
 def compute_threshold(foreground: np.ndarray, cfg: Dict[str, Any]) -> int:
@@ -72,8 +65,9 @@ def run_pipeline(config: Dict[str, Any]) -> None:
             "max_disappeared": 10,
         },
     )
-
-    roi = build_roi(config)
+    detection_cfg = config.get("detection", {})
+    min_history_full_frame = int(detection_cfg.get("min_history", 3))
+    min_area_full_frame = int(detection_cfg.get("min_area", blob_cfg.get("min_area", 500)))
     background_model = RunningAverageBackground(background_cfg.get("learning_rate", 0.02))
     tracker = BlobTracker(
         max_distance=blob_cfg.get("max_distance", 60.0),
@@ -91,7 +85,6 @@ def run_pipeline(config: Dict[str, Any]) -> None:
                 break
 
             gray = preprocess_frame(frame, resize_cfg)
-            roi.update_bounds(gray.shape[0], gray.shape[1])
             blurred = apply_gaussian_blur(
                 gray,
                 gaussian_cfg.get("kernel_size", 5),
@@ -123,17 +116,14 @@ def run_pipeline(config: Dict[str, Any]) -> None:
             tracks = tracker.update(blobs)
             for track in tracks:
                 history: List[Any] = track.get("history", [])  # type: ignore[assignment]
-                if len(history) < 2:
-                    continue
-                previous = history[-2]
-                current = history[-1]
-                if roi.check_entry(previous, current) and track["id"] not in triggered_tracks:
+                entered = len(history) >= min_history_full_frame and int(track.get("area", 0)) >= min_area_full_frame
+
+                if entered and track["id"] not in triggered_tracks:
                     print("Human entered the room")
                     triggered_tracks.add(track["id"])
 
             if display:
                 display_frame = frame.copy()
-                roi.draw(display_frame)
                 for track in tracks:
                     bbox = track.get("bbox", (0, 0, 0, 0))
                     min_y, min_x, max_y, max_x = [int(v) for v in bbox]
@@ -153,6 +143,9 @@ def run_pipeline(config: Dict[str, Any]) -> None:
 
                 cv2.imshow("Detections", display_frame)
                 cv2.imshow("Mask", processed)
+                cv2.imshow("Gray", gray)
+                cv2.imshow("Blurred,", blurred)
+                cv2.imshow("foreground", foreground)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
     except KeyboardInterrupt:

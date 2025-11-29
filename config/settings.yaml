@@ -1,4 +1,4 @@
-video_source: samples/test_video.mp4
+video_source: samples/test_video1.mp4
 display: true
 resize:
   width: 640
@@ -24,8 +24,6 @@ blob:
   aspect_ratio_range: [0.2, 3.0]
   max_distance: 75.0
   max_disappeared: 12
-roi:
-  top_left: [0, 0]
-  bottom_right: [0, 0]
-  direction: enter
-  full_frame: true
+detection:
+  min_history: 3
+  min_area: 1000

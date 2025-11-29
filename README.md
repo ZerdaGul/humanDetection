@@ -7,7 +7,7 @@ This project implements a full classical computer vision pipeline that detects w
 - Running-average background model with manual difference computation
 - Adaptive thresholding plus handcrafted erosion, dilation, opening, and closing
 - Custom 8-connected component labeling plus blob statistics
-- Blob filtering, lightweight centroid tracker, and ROI entry detection
+- Blob filtering plus a lightweight centroid tracker for stable detections
 - Configurable pipeline through `config/settings.yaml`
 
 ## Project Layout
@@ -21,7 +21,6 @@ humanDetection/
     morphology.py
     connected_components.py
     blob.py
-    roi.py
     utils.py
   config/settings.yaml
   samples/test_video.mp4
@@ -46,16 +45,15 @@ pip install numpy opencv-python pyyaml
 - `threshold.adaptive`, `threshold.std_factor`, `threshold.offset`: Enable and tune adaptive thresholds computed from the current frame statistics.
 - `morphology.opening_iterations`, `morphology.erosion_iterations`, `morphology.dilation_iterations`, `morphology.closing_iterations`: Control noise removal and blob solidification passes.
 - `blob.*`: Area limits, allowable aspect ratio, tracker tuning.
-- `roi.full_frame`: Set to `true` to automatically cover the entire processed frame.
-- `roi.top_left`, `roi.bottom_right`: Manual door boundary in `(row, column)` coordinates (ignored when `full_frame` is true).
+- `detection.min_history`, `detection.min_area`: Require a track to persist for N frames and exceed a given area before firing the entry event.
 
-Adjust these values to match your environment—for example, enlarge the ROI coordinates to cover your doorway and tweak the minimum area to ignore noise.
+Adjust these values to match your environment—for example, tweak the blob area limits to ignore noise and tune the detection thresholds until a person consistently triggers the alert.
 
 ## Running the Detector
 ```bash
 python src/main.py --config config/settings.yaml
 ```
-Press `q` to exit the display windows. Whenever a tracked blob crosses into the ROI, the program prints `Human entered the room` and highlights the detection on screen. Use `Ctrl+C` in the terminal at any time for a graceful shutdown.
+Press `q` to exit the display windows. Whenever a tracked blob is stable for the configured number of frames and large enough to be considered a person, the program prints `Human entered the room` and highlights the detection on screen. Use `Ctrl+C` in the terminal at any time for a graceful shutdown.
 
 ### Troubleshooting Performance / Mask Quality
 - Lower the input resolution via `resize.width/height` for faster processing.
