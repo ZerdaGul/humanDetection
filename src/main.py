@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -25,13 +25,13 @@ def compute_threshold(foreground: np.ndarray, cfg: Dict[str, Any]) -> int:
     return base_value
 
 
-def preprocess_frame(frame: np.ndarray, resize_cfg: Dict[str, Any]) -> np.ndarray:
+def preprocess_frame(frame: np.ndarray, resize_cfg: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray]:
     width = resize_cfg.get("width")
     height = resize_cfg.get("height")
     if width and height:
         frame = resize_frame(frame, int(width), int(height))
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    return gray
+    return gray, frame
 
 
 def run_pipeline(config: Dict[str, Any]) -> None:
@@ -84,7 +84,8 @@ def run_pipeline(config: Dict[str, Any]) -> None:
             if not ret:
                 break
 
-            gray = preprocess_frame(frame, resize_cfg)
+            gray, resized_frame = preprocess_frame(frame, resize_cfg)
+            frame = resized_frame
             blurred = apply_gaussian_blur(
                 gray,
                 gaussian_cfg.get("kernel_size", 5),
@@ -142,10 +143,6 @@ def run_pipeline(config: Dict[str, Any]) -> None:
                     )
 
                 cv2.imshow("Detections", display_frame)
-                cv2.imshow("Mask", processed)
-                cv2.imshow("Gray", gray)
-                cv2.imshow("Blurred,", blurred)
-                cv2.imshow("foreground", foreground)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
     except KeyboardInterrupt:

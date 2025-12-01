@@ -1,13 +1,13 @@
-video_source: samples/test_video1.mp4
+video_source: samples/test_video.mp4
 display: true
 resize:
   width: 640
   height: 480
 gaussian:
-  kernel_size: 5
-  sigma: 1.2
+  kernel_size: 3
+  sigma: 1.0
 background:
-  learning_rate: 0.02
+  learning_rate: 0.05
 threshold:
   value: 25
   adaptive: true
@@ -27,3 +27,7 @@ blob:
 detection:
   min_history: 3
   min_area: 1000
+resize:
+  enabled: true   
+  width: 240      
+  height: 320
