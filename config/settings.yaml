@@ -1,0 +1,33 @@
+video_source: samples/test_video.mp4
+display: true
+resize:
+  width: 640
+  height: 480
+gaussian:
+  kernel_size: 3
+  sigma: 1.0
+background:
+  learning_rate: 0.05
+threshold:
+  value: 25
+  adaptive: true
+  std_factor: 1.6
+  offset: 6.0
+morphology:
+  opening_iterations: 1
+  erosion_iterations: 0
+  dilation_iterations: 0
+  closing_iterations: 2
+blob:
+  min_area: 700
+  max_area: 50000
+  aspect_ratio_range: [0.2, 3.0]
+  max_distance: 75.0
+  max_disappeared: 12
+detection:
+  min_history: 3
+  min_area: 1000
+resize:
+  enabled: true   
+  width: 240      
+  height: 320
