@@ -1,0 +1,21 @@
+# Python cache & metadata
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# OS files
+.DS_Store
+samples/.DS_Store
+
+# Sample media (keeps folder but ignores video content)
+samples/*.mp4
+samples/*.avi
+samples/*.mov
+samples/*.mkv
+
+# Build artifacts
+*.log

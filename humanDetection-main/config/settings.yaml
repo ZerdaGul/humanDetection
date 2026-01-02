@@ -1,0 +1,71 @@
+# Human Detection Pipeline Configuration - Enhanced Tracking
+# ==========================================================
+
+video_source: samples/test_video.mp4
+
+# Display settings
+display: true
+debug: false
+draw_trails: true
+
+# Frame resize
+resize:
+  width: 240
+  height: 320
+
+# Gaussian blur
+gaussian:
+  kernel_size: 3
+  sigma: 1.0
+
+# Threshold settings
+threshold:
+  value: 15
+  adaptive: true
+  std_factor: 1.2
+  offset: 3.0
+
+# Background model
+background:
+  type: running_average
+  learning_rate: 0.01
+
+# Morphological operations
+morphology:
+  kernel_size: 3
+  kernel_shape: rect
+  opening_iterations: 1
+  erosion_iterations: 0
+  dilation_iterations: 0
+  closing_iterations: 2
+
+# Advanced Blob Tracking Configuration
+blob:
+  # Filtering
+  min_area: 700
+  max_area: 50000
+  aspect_ratio_range: [0.25, 0.65]
+  
+  # Matching thresholds
+  max_distance: 100.0
+  max_iou_distance: 0.7
+  
+  # Track lifecycle
+  max_disappeared: 30
+  min_hits: 3
+  
+  # Cost function weights (sum ~1.0)
+  iou_weight: 0.25
+  distance_weight: 0.30
+  size_weight: 0.15
+  appearance_weight: 0.20
+  velocity_weight: 0.10
+  
+  # Kalman filter tuning
+  process_noise: 4.0
+  measurement_noise: 1.0
+  
+# Detection event settings
+detection:
+  min_history: 3
+  min_area: 1000
